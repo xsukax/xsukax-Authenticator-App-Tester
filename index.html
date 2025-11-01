@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>xsukax Authenticator App Tester</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsSHA/3.3.1/sha.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: #f6f8fa;
+            color: #24292f;
+            line-height: 1.5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(27,31,35,0.12);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #2ea44f 0%, #238636 100%);
+            color: white;
+            padding: 24px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        .content {
+            padding: 24px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #24292f;
+        }
+        select, input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            background: white;
+            transition: border-color 0.2s;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: #0969da;
+            box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.1);
+        }
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        button {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .btn-primary {
+            background: #2da44e;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #2c974b;
+        }
+        .btn-secondary {
+            background: #f6f8fa;
+            color: #24292f;
+            border: 1px solid #d0d7de;
+        }
+        .btn-secondary:hover {
+            background: #f3f4f6;
+            border-color: #afb8c1;
+        }
+        .result-section {
+            display: none;
+            margin-top: 24px;
+            padding: 20px;
+            background: #f6f8fa;
+            border-radius: 6px;
+            border: 1px solid #d0d7de;
+        }
+        .result-section.active {
+            display: block;
+        }
+        .qr-container {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 6px;
+        }
+        #qrcode {
+            display: inline-block;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .info-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #d0d7de;
+            position: relative;
+        }
+        .info-label {
+            font-size: 12px;
+            color: #656d76;
+            margin-bottom: 4px;
+        }
+        .info-value {
+            font-weight: 600;
+            font-size: 14px;
+            word-break: break-all;
+            margin-bottom: 8px;
+        }
+        .copy-btn {
+            padding: 4px 12px;
+            background: #f6f8fa;
+            border: 1px solid #d0d7de;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        .copy-btn:hover {
+            background: #f3f4f6;
+            border-color: #afb8c1;
+        }
+        .code-display {
+            text-align: center;
+            margin: 20px 0;
+            padding: 24px;
+            background: white;
+            border-radius: 6px;
+            border: 2px solid #2da44e;
+        }
+        .verify-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #d0d7de;
+        }
+        .verify-section h3 {
+            margin: 0 0 8px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #24292f;
+        }
+        .verify-instruction {
+            margin: 0 0 16px;
+            font-size: 14px;
+            color: #656d76;
+        }
+        .code-value {
+            font-size: 48px;
+            font-weight: 700;
+            letter-spacing: 8px;
+            color: #2da44e;
+            font-family: 'Courier New', monospace;
+        }
+        .code-timer {
+            margin-top: 12px;
+            font-size: 14px;
+            color: #656d76;
+        }
+        .progress-bar {
+            height: 4px;
+            background: #d0d7de;
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #2da44e;
+            transition: width 0.3s linear;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+        .modal.active {
+            display: flex;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.2s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .modal-body {
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #656d76;
+            white-space: pre-line;
+            line-height: 1.6;
+        }
+        .modal-success {
+            color: #1a7f37;
+            font-weight: 600;
+        }
+        .modal-error {
+            color: #d1242f;
+            font-weight: 600;
+        }
+        .modal-footer {
+            text-align: right;
+        }
+        .uri-display {
+            background: #f6f8fa;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            word-break: break-all;
+            border: 1px solid #d0d7de;
+            margin: 12px 0;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        @media (max-width: 600px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 xsukax Authenticator App Tester</h1>
+            <p>Generate and test TOTP/HOTP codes for authenticator apps</p>
+        </div>
+        
+        <div class="content">
+            <div class="form-group">
+                <label for="type">Authentication Type</label>
+                <select id="type">
+                    <option value="totp">TOTP (Time-based)</option>
+                    <option value="hotp">HOTP (Counter-based)</option>
+                </select>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="algorithm">Algorithm</label>
+                    <select id="algorithm">
+                        <option value="SHA-1">SHA-1</option>
+                        <option value="SHA-256">SHA-256</option>
+                        <option value="SHA-512">SHA-512</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="digits">Digits</label>
+                    <select id="digits">
+                        <option value="6">6 digits</option>
+                        <option value="8">8 digits</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group" id="periodGroup">
+                    <label for="period">Period (seconds)</label>
+                    <input type="number" id="period" value="30" min="1" max="300">
+                </div>
+
+                <div class="form-group" id="counterGroup" style="display: none;">
+                    <label for="counter">Counter</label>
+                    <input type="number" id="counter" value="0" min="0">
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-primary" onclick="generateAccount()">Generate New Account</button>
+                <button class="btn-secondary" onclick="resetForm()">Reset</button>
+            </div>
+
+            <div id="resultSection" class="result-section">
+                <div class="qr-container">
+                    <div id="qrcode"></div>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Issuer</div>
+                        <div class="info-value" id="displayService"></div>
+                        <button class="copy-btn" onclick="copyField('displayService', 'Service')">Copy</button>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Account</div>
+                        <div class="info-value" id="displayAccount"></div>
+                        <button class="copy-btn" onclick="copyField('displayAccount', 'Account')">Copy</button>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Type</div>
+                        <div class="info-value" id="displayType"></div>
+                        <button class="copy-btn" onclick="copyField('displayType', 'Type')">Copy</button>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Algorithm</div>
+                        <div class="info-value" id="displayAlgorithm"></div>
+                        <button class="copy-btn" onclick="copyField('displayAlgorithm', 'Algorithm')">Copy</button>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Secret</div>
+                        <div class="info-value" id="displaySecret"></div>
+                        <button class="copy-btn" onclick="copyField('displaySecret', 'Secret')">Copy</button>
+                    </div>
+                </div>
+
+                <div class="uri-display" id="uriDisplay"></div>
+                <button class="btn-secondary" onclick="copyURI()" style="width: 100%; margin-top: 8px;">Copy URI</button>
+
+                <div class="verify-section">
+                    <h3>Verify Your Authenticator App</h3>
+                    <p class="verify-instruction">Scan the QR code with your authenticator app (Google Authenticator, Microsoft Authenticator, Authy, etc.), then enter the code it generates below to verify it works correctly.</p>
+                    
+                    <div id="hotpInfo" style="display: none; margin-bottom: 16px; padding: 12px; background: #fff8c5; border: 1px solid #e3d18a; border-radius: 6px; font-size: 14px; color: #7d6608;">
+                        <strong>HOTP Counter:</strong> <span id="displayCounter"></span><br>
+                        Make sure your authenticator app counter matches this value.
+                    </div>
+
+                    <div class="form-group">
+                        <label for="userCode">Enter Code from Your Authenticator App</label>
+                        <input type="text" id="userCode" placeholder="Enter 6 or 8 digit code" maxlength="8" pattern="[0-9]*" inputmode="numeric" style="text-align: center; font-size: 24px; letter-spacing: 4px; font-weight: 600;">
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="verifyCode()">Verify Code</button>
+                        <button class="btn-secondary" onclick="incrementCounter()" id="incrementBtn" style="display: none;">Increment Counter</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" id="modalHeader">Notification</div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer">
+                <button class="btn-primary" onclick="closeModal()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSecret = '';
+        let currentConfig = {};
+
+        // Initialize
+        document.getElementById('type').addEventListener('change', toggleTypeFields);
+        
+        // Allow Enter key to submit verification
+        document.getElementById('userCode').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                verifyCode();
+            }
+        });
+        
+        // Only allow numbers in code input
+        document.getElementById('userCode').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        function toggleTypeFields() {
+            const type = document.getElementById('type').value;
+            const periodGroup = document.getElementById('periodGroup');
+            const counterGroup = document.getElementById('counterGroup');
+            
+            if (type === 'totp') {
+                periodGroup.style.display = 'block';
+                counterGroup.style.display = 'none';
+            } else {
+                periodGroup.style.display = 'none';
+                counterGroup.style.display = 'block';
+            }
+        }
+
+        function generateRandomString(length) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        function generateRandomEmail() {
+            const domains = ['example.com', 'test.com', 'demo.com', 'sample.com', 'mock.com'];
+            const username = generateRandomString(8).toLowerCase();
+            const domain = domains[Math.floor(Math.random() * domains.length)];
+            return `${username}@${domain}`;
+        }
+
+        function generateSecret() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+            let secret = '';
+            for (let i = 0; i < 32; i++) {
+                secret += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return secret;
+        }
+
+        function base32Decode(base32) {
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+            const cleanInput = base32.toUpperCase().replace(/=+$/, '');
+            let bits = '';
+            
+            for (let i = 0; i < cleanInput.length; i++) {
+                const val = alphabet.indexOf(cleanInput.charAt(i));
+                if (val === -1) continue;
+                bits += val.toString(2).padStart(5, '0');
+            }
+            
+            const bytes = [];
+            for (let i = 0; i + 8 <= bits.length; i += 8) {
+                bytes.push(parseInt(bits.substr(i, 8), 2));
+            }
+            
+            return new Uint8Array(bytes);
+        }
+
+        function generateHOTP(secret, counter, digits, algorithm) {
+            const key = base32Decode(secret);
+            const buffer = new ArrayBuffer(8);
+            const view = new DataView(buffer);
+            view.setBigUint64(0, BigInt(counter), false);
+            
+            const shaObj = new jsSHA(algorithm, "ARRAYBUFFER");
+            shaObj.setHMACKey(key, "UINT8ARRAY");
+            shaObj.update(buffer);
+            const hmac = shaObj.getHMAC("UINT8ARRAY");
+            
+            const offset = hmac[hmac.length - 1] & 0x0f;
+            const binary = ((hmac[offset] & 0x7f) << 24) |
+                          ((hmac[offset + 1] & 0xff) << 16) |
+                          ((hmac[offset + 2] & 0xff) << 8) |
+                          (hmac[offset + 3] & 0xff);
+            
+            const otp = binary % Math.pow(10, digits);
+            return otp.toString().padStart(digits, '0');
+        }
+
+        function generateTOTP(secret, period, digits, algorithm) {
+            const counter = Math.floor(Date.now() / 1000 / period);
+            return generateHOTP(secret, counter, digits, algorithm);
+        }
+
+        function generateAccount() {
+            const type = document.getElementById('type').value;
+            const algorithm = document.getElementById('algorithm').value;
+            const digits = parseInt(document.getElementById('digits').value);
+            const period = parseInt(document.getElementById('period').value);
+            const counter = parseInt(document.getElementById('counter').value);
+
+            currentSecret = generateSecret();
+            const serviceName = generateRandomString(6);
+            const email = generateRandomEmail();
+
+            currentConfig = {
+                type,
+                algorithm,
+                digits,
+                period,
+                counter,
+                serviceName,
+                email,
+                secret: currentSecret
+            };
+
+            const uri = buildOTPAuthURI();
+            displayResults(uri);
+        }
+
+        function buildOTPAuthURI() {
+            const { type, algorithm, digits, period, counter, serviceName, email, secret } = currentConfig;
+            
+            let uri = `otpauth://${type}/${encodeURIComponent(serviceName)}:${encodeURIComponent(email)}?`;
+            uri += `secret=${secret}`;
+            uri += `&issuer=${encodeURIComponent(serviceName)}`;
+            uri += `&algorithm=${algorithm}`;
+            uri += `&digits=${digits}`;
+            
+            if (type === 'totp') {
+                uri += `&period=${period}`;
+            } else {
+                uri += `&counter=${counter}`;
+            }
+            
+            return uri;
+        }
+
+        function displayResults(uri) {
+            document.getElementById('qrcode').innerHTML = '';
+            new QRCode(document.getElementById('qrcode'), {
+                text: uri,
+                width: 256,
+                height: 256,
+                colorDark: "#24292f",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            document.getElementById('displayService').textContent = currentConfig.serviceName;
+            document.getElementById('displayAccount').textContent = currentConfig.email;
+            document.getElementById('displayType').textContent = currentConfig.type.toUpperCase();
+            document.getElementById('displayAlgorithm').textContent = currentConfig.algorithm;
+            document.getElementById('displaySecret').textContent = currentConfig.secret;
+            document.getElementById('uriDisplay').textContent = uri;
+
+            const hotpInfo = document.getElementById('hotpInfo');
+            const incrementBtn = document.getElementById('incrementBtn');
+            
+            if (currentConfig.type === 'hotp') {
+                hotpInfo.style.display = 'block';
+                incrementBtn.style.display = 'block';
+                document.getElementById('displayCounter').textContent = currentConfig.counter;
+            } else {
+                hotpInfo.style.display = 'none';
+                incrementBtn.style.display = 'none';
+            }
+
+            document.getElementById('resultSection').classList.add('active');
+            document.getElementById('userCode').value = '';
+        }
+
+        function verifyCode() {
+            const userCode = document.getElementById('userCode').value.trim();
+            
+            if (!userCode) {
+                showModal('⚠️ Error', 'Please enter a code from your authenticator app.', 'error');
+                return;
+            }
+
+            if (userCode.length !== currentConfig.digits) {
+                showModal('⚠️ Error', `Please enter a ${currentConfig.digits}-digit code.`, 'error');
+                return;
+            }
+
+            const { type, algorithm, digits, period, counter, secret } = currentConfig;
+            let expectedCode;
+
+            if (type === 'totp') {
+                expectedCode = generateTOTP(secret, period, digits, algorithm);
+                
+                // Also check previous and next time window for clock skew tolerance
+                const prevCounter = Math.floor(Date.now() / 1000 / period) - 1;
+                const nextCounter = Math.floor(Date.now() / 1000 / period) + 1;
+                const prevCode = generateHOTP(secret, prevCounter, digits, algorithm);
+                const nextCode = generateHOTP(secret, nextCounter, digits, algorithm);
+                
+                if (userCode === expectedCode || userCode === prevCode || userCode === nextCode) {
+                    showModal('✅ Success!', 'Your authenticator app is working correctly!\n\nThe code matches perfectly. Your app is properly synchronized and generating valid codes.', 'success');
+                    document.getElementById('userCode').value = '';
+                } else {
+                    showModal('❌ Verification Failed', `The code doesn't match.\n\nExpected code: ${expectedCode}\n\nPossible issues:\n• Ensure your device time is accurate and synced\n• Verify you scanned the correct QR code\n• Check if your app supports ${algorithm}`, 'error');
+                }
+            } else {
+                expectedCode = generateHOTP(secret, counter, digits, algorithm);
+                
+                if (userCode === expectedCode) {
+                    showModal('✅ Success!', `Your authenticator app is working correctly!\n\nThe code matches perfectly.\n\nNote: Remember to increment the counter in your authenticator app before generating the next code.`, 'success');
+                    document.getElementById('userCode').value = '';
+                } else {
+                    showModal('❌ Verification Failed', `The code doesn't match.\n\nExpected code: ${expectedCode}\n\nPossible issues:\n• Verify you scanned the correct QR code\n• Check if your counter value is ${counter}\n• Ensure your app supports HOTP and ${algorithm}`, 'error');
+                }
+            }
+        }
+
+        function incrementCounter() {
+            if (currentConfig.type === 'hotp') {
+                currentConfig.counter++;
+                document.getElementById('counter').value = currentConfig.counter;
+                document.getElementById('displayCounter').textContent = currentConfig.counter;
+                showModal('✓ Counter Incremented', `Counter is now: ${currentConfig.counter}\n\nYou should also increment the counter in your authenticator app to keep them in sync.`, 'success');
+            }
+        }
+
+        function copyField(fieldId, fieldName) {
+            const text = document.getElementById(fieldId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showModal('✓ Copied!', `${fieldName} copied to clipboard!`, 'success');
+            }).catch(() => {
+                showModal('⚠️ Error', 'Failed to copy to clipboard.', 'error');
+            });
+        }
+
+        function copyURI() {
+            const uri = document.getElementById('uriDisplay').textContent;
+            navigator.clipboard.writeText(uri).then(() => {
+                showModal('✓ Copied!', 'URI copied to clipboard!', 'success');
+            }).catch(() => {
+                showModal('⚠️ Error', 'Failed to copy to clipboard.', 'error');
+            });
+        }
+
+        function resetForm() {
+            document.getElementById('resultSection').classList.remove('active');
+            currentSecret = '';
+            currentConfig = {};
+            document.getElementById('type').value = 'totp';
+            document.getElementById('algorithm').value = 'SHA-1';
+            document.getElementById('digits').value = '6';
+            document.getElementById('period').value = '30';
+            document.getElementById('counter').value = '0';
+            toggleTypeFields();
+        }
+
+        function showModal(title, message, type = 'info') {
+            const modalBody = document.getElementById('modalBody');
+            document.getElementById('modalHeader').textContent = title;
+            modalBody.textContent = message;
+            
+            // Apply styling based on type
+            modalBody.className = 'modal-body';
+            if (type === 'success') {
+                modalBody.classList.add('modal-success');
+            } else if (type === 'error') {
+                modalBody.classList.add('modal-error');
+            }
+            
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        // Close modal on background click
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
