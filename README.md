@@ -1,6 +1,6 @@
 # 🔐 xsukax Authenticator App Tester
 
-A powerful, privacy-focused web-based tool for generating and testing TOTP (Time-based One-Time Password) and HOTP (Hash-based One-Time Password) codes. Designed for developers, security professionals, and anyone who needs to test authenticator app implementations without compromising their sensitive credentials.
+A powerful, privacy-focused web-based tool for generating and testing TOTP (Time-based One-Time Password) and HOTP (HMAC-based One-Time Password) codes. Designed for developers, security professionals, and anyone who needs to test authenticator app implementations without compromising their sensitive credentials.
 
 ## 📋 Project Overview
 
